@@ -14,7 +14,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 /**
  * Pousse le prix et la quantité vendable ERP d'un SKU vers Shopify.
  */
-class PushVariantToShopify extends TrackedSyncJob
+final class PushVariantToShopify extends TrackedSyncJob
 {
     public function __construct(public readonly string $sku) {}
 
@@ -25,7 +25,7 @@ class PushVariantToShopify extends TrackedSyncJob
 
     public static function fromPayload(array $payload): static
     {
-        return new static((string) $payload['sku']);
+        return new self((string) $payload['sku']);
     }
 
     public function payload(): array
@@ -33,7 +33,7 @@ class PushVariantToShopify extends TrackedSyncJob
         return ['sku' => $this->sku];
     }
 
-    public function subject(): ?string
+    public function subject(): string
     {
         return $this->sku;
     }

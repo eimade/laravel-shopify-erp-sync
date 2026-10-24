@@ -11,7 +11,7 @@ use App\Services\SkuMapper;
  * Traite le webhook products/update : met à jour le mapping et
  * ouvre un conflit si un prix a été modifié directement dans Shopify.
  */
-class ProcessProductUpdate extends TrackedSyncJob
+final class ProcessProductUpdate extends TrackedSyncJob
 {
     /**
      * @param  array<string, mixed>  $product  payload du webhook
@@ -25,7 +25,7 @@ class ProcessProductUpdate extends TrackedSyncJob
 
     public static function fromPayload(array $payload): static
     {
-        return new static($payload);
+        return new self($payload);
     }
 
     public function payload(): array

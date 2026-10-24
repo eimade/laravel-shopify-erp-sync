@@ -1,10 +1,10 @@
-# Lancement : docker compose up -d --build   puis http://localhost:8081
+# Lancement : docker compose up -d --build   puis http://localhost:18080
 # Les valeurs ci-dessous sont des valeurs de DÉMO (boutique Shopify simulée), pas des secrets.
 x-app-env: &app-env
   APP_NAME: SyncHub
   APP_ENV: production
   APP_DEBUG: "false"
-  APP_URL: http://localhost:8081
+  APP_URL: http://localhost:18080
   APP_LOCALE: fr
   LOG_CHANNEL: stderr
   DB_CONNECTION: mariadb
@@ -67,7 +67,7 @@ services:
   nginx:
     image: nginx:1.27-alpine
     ports:
-      - "8081:80"
+      - "18080:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - public:/var/www/html/public:ro

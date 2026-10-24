@@ -15,6 +15,9 @@ class ShopifyException extends RuntimeException
         parent::__construct($message);
     }
 
+    /**
+     * @param  list<array{field?: list<string>|string|null, message?: string}>  $errors
+     */
     public static function userErrors(string $operation, array $errors): self
     {
         $messages = array_map(

@@ -9,7 +9,7 @@ use App\Services\OrderImporter;
 /**
  * Remonte une commande Shopify (webhook orders/create) dans l'ERP.
  */
-class ImportShopifyOrder extends TrackedSyncJob
+final class ImportShopifyOrder extends TrackedSyncJob
 {
     /**
      * @param  array<string, mixed>  $order  OrderData sérialisée
@@ -23,7 +23,7 @@ class ImportShopifyOrder extends TrackedSyncJob
 
     public static function fromPayload(array $payload): static
     {
-        return new static($payload);
+        return new self($payload);
     }
 
     public function payload(): array

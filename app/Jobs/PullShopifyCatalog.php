@@ -12,7 +12,7 @@ use App\Services\SkuMapper;
  * - rattacher chaque variante Shopify au SKU ERP (mapping SKU <-> variant ID) ;
  * - signaler les écarts de prix (conflits) et les SKU orphelins.
  */
-class PullShopifyCatalog extends TrackedSyncJob
+final class PullShopifyCatalog extends TrackedSyncJob
 {
     public function __construct(public readonly int $pageSize = 50) {}
 
@@ -23,7 +23,7 @@ class PullShopifyCatalog extends TrackedSyncJob
 
     public static function fromPayload(array $payload): static
     {
-        return new static((int) ($payload['page_size'] ?? 50));
+        return new self((int) ($payload['page_size'] ?? 50));
     }
 
     public function payload(): array
@@ -31,7 +31,7 @@ class PullShopifyCatalog extends TrackedSyncJob
         return ['page_size' => $this->pageSize];
     }
 
-    public function subject(): ?string
+    public function subject(): string
     {
         return 'catalogue';
     }

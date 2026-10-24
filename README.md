@@ -44,7 +44,7 @@ Besoins exprimés par l'équipe e-commerce et la comptabilité :
 - **Back-office Filament** : tableau de bord de santé des connecteurs, journal filtrable avec bouton **Rejouer**,
   **résolution des conflits** (garder l'ERP / accepter Shopify), édition prix/stocks ERP, import CSV, fiches PIM, commandes.
 - **API GraphQL interne (Lighthouse)** en lecture : catalogue unifié paginé, recherche, variante par SKU, santé des connecteurs.
-- **Front JavaScript** (vanilla, sans build) consommant l'API GraphQL : `http://localhost:8081/`.
+- **Front JavaScript** (vanilla, sans build) consommant l'API GraphQL : `http://localhost:18080/`.
 - **Mode démo hors-ligne** : `SHOPIFY_DRIVER=fake` (par défaut) ; commande `synchub:simulate-webhook` pour envoyer de vrais webhooks signés.
 - **Réconciliation planifiée** (scheduler) : rattrapage horaire des commandes, relecture du catalogue et republication quotidiennes.
 
@@ -111,7 +111,7 @@ app/
 Le reste de l'application ne dépend que des **contrats** `ShopifyClient` et `ErpClient` : le choix de l'implémentation
 se fait dans `AppServiceProvider` selon `SHOPIFY_DRIVER` (`fake` ou `graphql`).
 
-**Docker Compose** : `app` (php-fpm 8.3), `nginx` (port **8081**), `mariadb` 11.4, `redis` 7, `worker` (`queue:work`), `scheduler` (`schedule:work`).
+**Docker Compose** : `app` (php-fpm 8.3), `nginx` (port **18080**), `mariadb` 11.4, `redis` 7, `worker` (`queue:work`), `scheduler` (`schedule:work`).
 
 ## 5. Stack
 
@@ -129,10 +129,10 @@ de démo et exécute un premier cycle de synchronisation.
 
 | URL | Contenu |
 |---|---|
-| http://localhost:8081/ | front JS du catalogue unifié (API GraphQL) |
-| http://localhost:8081/admin | back-office Filament — `admin@synchub.test` / `password` (compte de démo) |
-| http://localhost:8081/graphql | API GraphQL (POST) |
-| http://localhost:8081/api/erp/items | API REST ERP (en-tête `X-Erp-Token: demo-erp-token`) |
+| http://localhost:18080/ | front JS du catalogue unifié (API GraphQL) |
+| http://localhost:18080/admin | back-office Filament — `admin@synchub.test` / `password` (compte de démo) |
+| http://localhost:18080/graphql | API GraphQL (POST) |
+| http://localhost:18080/api/erp/items | API REST ERP (en-tête `X-Erp-Token: demo-erp-token`) |
 
 Données de démo (`database/seeders/data/erp-catalogue.csv`) : 8 produits, 13 SKU, 2 entrepôts. Volontairement :
 - `FOUL-SOIE-01` n'existe pas dans Shopify ⇒ job en **dead-letter** + alerte ;
@@ -146,7 +146,7 @@ composer install
 cp .env.example .env && php artisan key:generate
 # .env : QUEUE_CONNECTION=sync, SHOPIFY_WEBHOOK_SECRET=demo-webhook-secret, ERP_API_TOKEN=demo-erp-token
 php artisan migrate --seed
-php artisan serve --port=8081
+php artisan serve --port=18080
 ```
 
 ## 7. Exemples d'appels
@@ -155,20 +155,20 @@ php artisan serve --port=8081
 
 ```bash
 # Liste filtrée
-curl -s -H "X-Erp-Token: demo-erp-token" "http://localhost:8081/api/erp/items?search=ROBE"
+curl -s -H "X-Erp-Token: demo-erp-token" "http://localhost:18080/api/erp/items?search=ROBE"
 
 # Mise à jour prix + stock : 202 Accepted, synchronisation Shopify mise en file
 curl -s -X PATCH -H "X-Erp-Token: demo-erp-token" -H "Content-Type: application/json" \
   -d '{"price": 69.90, "stocks": [{"location": "entrepot-lyon", "on_hand": 5}]}' \
-  http://localhost:8081/api/erp/items/ROBE-LIN-S
+  http://localhost:18080/api/erp/items/ROBE-LIN-S
 
 # Import CSV (207 Multi-Status si des lignes sont rejetées)
 curl -s -H "X-Erp-Token: demo-erp-token" -F "file=@database/seeders/data/erp-catalogue.csv" \
-  http://localhost:8081/api/erp/import
+  http://localhost:18080/api/erp/import
 
 # Journal : jobs en dead-letter, puis relance
-curl -s -H "X-Erp-Token: demo-erp-token" "http://localhost:8081/api/erp/sync-runs?status=dead"
-curl -s -X POST -H "X-Erp-Token: demo-erp-token" http://localhost:8081/api/erp/sync-runs/42/replay
+curl -s -H "X-Erp-Token: demo-erp-token" "http://localhost:18080/api/erp/sync-runs?status=dead"
+curl -s -X POST -H "X-Erp-Token: demo-erp-token" http://localhost:18080/api/erp/sync-runs/42/replay
 ```
 
 ### Webhook Shopify signé
@@ -181,7 +181,7 @@ docker compose exec app php artisan synchub:simulate-webhook products/update --s
 # Ou à la main avec curl
 BODY='{"id":1001,"name":"#1001","currency":"EUR","total_price":"79.90","line_items":[{"sku":"ROBE-LIN-S","title":"Robe","quantity":1,"price":"79.90"}]}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "demo-webhook-secret" -binary | base64)
-curl -s -X POST http://localhost:8081/api/webhooks/shopify \
+curl -s -X POST http://localhost:18080/api/webhooks/shopify \
   -H "Content-Type: application/json" -H "X-Shopify-Topic: orders/create" \
   -H "X-Shopify-Webhook-Id: demo-1" -H "X-Shopify-Hmac-Sha256: $SIG" -d "$BODY"
 # => {"status":"accepted","sync_run_id":…}   (rejoué : {"status":"duplicate",…})
@@ -190,7 +190,7 @@ curl -s -X POST http://localhost:8081/api/webhooks/shopify \
 ### API GraphQL
 
 ```bash
-curl -s http://localhost:8081/graphql -H "Content-Type: application/json" -d '{"query":"{ products(search: \"robe\", first: 5) { data { title priceFrom totalAvailable variants { sku price available syncStatus } } } syncHealth { shopifyOk deadLetters openConflicts } }"}'
+curl -s http://localhost:18080/graphql -H "Content-Type: application/json" -d '{"query":"{ products(search: \"robe\", first: 5) { data { title priceFrom totalAvailable variants { sku price available syncStatus } } } syncHealth { shopifyOk deadLetters openConflicts } }"}'
 ```
 
 ### Commandes d'exploitation
@@ -248,7 +248,22 @@ La CI GitHub Actions exécute Pint, PHPStan, les tests avec couverture (pcov) pu
 6. Logs : `docker compose logs -f worker app` (les dead-letters sont journalisés en `critical`).
 7. File bloquée : `docker compose exec app php artisan queue:failed` / `queue:retry all` ; vérifier `docker compose ps` (worker, redis).
 
-## 11. Brancher une vraie boutique Shopify
+## 11. Simulations
+
+Aucun compte externe n'est nécessaire pour lancer ou tester le projet. Chaque système tiers est derrière une interface
+et remplacé par une implémentation locale :
+
+| Système réel | Contrat | Implémentation de démo | Ce qui est simulé |
+|---|---|---|---|
+| Boutique Shopify (Admin API GraphQL) | `App\Integrations\Shopify\ShopifyClient` | `FakeShopifyClient` (`SHOPIFY_DRIVER=fake`, défaut) | produits, variantes, stocks et commandes conservés dans le cache (Redis en Docker, mémoire en test), pagination par curseur reproduite. Le client réel `GraphqlShopifyClient` existe et est testé contre des réponses `Http::fake` (pagination, `THROTTLED`, 401/5xx, `userErrors`) |
+| Webhooks envoyés par Shopify | middleware `VerifyShopifyWebhook` | commande `synchub:simulate-webhook` | génère un payload `orders/create` / `products/update`, le signe en HMAC avec le secret de démo et l'envoie à la vraie route HTTP |
+| ERP du détaillant | `App\Integrations\Erp\ErpClient` | `DatabaseErpClient` (« mini-ERP ») | tables `variants` / `stock_levels` / `orders` dans la base SyncHub, exposées par une API REST et un import CSV |
+| PIM | table `products` | fiches éditables dans Filament | titres, descriptions, marques |
+| Alerte e-mail de l'équipe | notification `SyncJobDeadLettered` | `MAIL_MAILER=log` | l'e-mail est écrit dans les logs (`docker compose logs app worker`) |
+
+Pour passer sur une vraie boutique, il suffit de changer `SHOPIFY_DRIVER=graphql` et de fournir les identifiants (section suivante).
+
+## 12. Brancher une vraie boutique Shopify
 
 1. Créer une application personnalisée sur une boutique de développement, scopes : `read_products`, `write_products`,
    `read_inventory`, `write_inventory`, `read_orders`, `read_locations`.
@@ -257,7 +272,7 @@ La CI GitHub Actions exécute Pint, PHPStan, les tests avec couverture (pcov) pu
 3. Déclarer les webhooks `orders/create` et `products/update` vers `https://<domaine>/api/webhooks/shopify`.
 4. `php artisan synchub:pull-catalog` puis `php artisan synchub:push-all`.
 
-## 12. Limites connues
+## 13. Limites connues
 
 - Le client GraphQL réel est testé contre des réponses simulées (`Http::fake`), pas contre une boutique réelle.
 - Un seul emplacement Shopify est alimenté (somme des entrepôts ERP) ; pas de multi-location Shopify.

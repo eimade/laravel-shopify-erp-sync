@@ -18,7 +18,7 @@ final class SyncHealthQuery
         $snapshot = $this->health->snapshot();
         $out = [];
         foreach ($snapshot as $key => $value) {
-            $out[Str::camel($key)] = $value === null ? null : (is_scalar($value) ? $value : (string) $value);
+            $out[Str::camel($key)] = $value;
         }
 
         return $out;

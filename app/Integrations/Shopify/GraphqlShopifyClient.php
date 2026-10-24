@@ -223,7 +223,8 @@ class GraphqlShopifyClient implements ShopifyClient
             $body = (array) $response->json();
             $this->throttle->record($body['extensions'] ?? null);
 
-            $errors = $body['errors'] ?? [];
+            /** @var list<array<string, mixed>> $errors */
+            $errors = (array) ($body['errors'] ?? []);
             if ($errors !== []) {
                 $throttled = collect($errors)->contains(fn ($e) => ($e['extensions']['code'] ?? null) === 'THROTTLED');
                 if ($throttled && $attempt < self::MAX_THROTTLE_RETRIES) {

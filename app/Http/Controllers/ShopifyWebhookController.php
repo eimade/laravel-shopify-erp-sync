@@ -86,6 +86,7 @@ class ShopifyWebhookController extends Controller
             'products/update' => isset($payload['id'], $payload['variants'])
                 ? new ProcessProductUpdate($payload)
                 : throw new InvalidArgumentException('Payload produit incomplet (id, variants requis).'),
+            default => throw new InvalidArgumentException("Topic non pris en charge : {$topic}"),
         };
     }
 }

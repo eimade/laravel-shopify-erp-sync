@@ -46,7 +46,7 @@ class CsvCatalogImporter
 
             while (($cells = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
                 $line++;
-                if ($cells === [null] || $cells === []) {
+                if ($cells === [null]) {
                     continue;
                 }
                 $report['rows']++;

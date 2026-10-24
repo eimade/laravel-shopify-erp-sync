@@ -10,7 +10,7 @@ use App\Services\OrderImporter;
  * Rattrapage : relit les commandes Shopify récentes (pagination par curseur)
  * pour remonter celles dont le webhook aurait été perdu. Idempotent.
  */
-class PullShopifyOrders extends TrackedSyncJob
+final class PullShopifyOrders extends TrackedSyncJob
 {
     public function __construct(public readonly ?string $since = null) {}
 
@@ -21,7 +21,7 @@ class PullShopifyOrders extends TrackedSyncJob
 
     public static function fromPayload(array $payload): static
     {
-        return new static($payload['since'] ?? null);
+        return new self($payload['since'] ?? null);
     }
 
     public function payload(): array
@@ -29,7 +29,7 @@ class PullShopifyOrders extends TrackedSyncJob
         return ['since' => $this->since];
     }
 
-    public function subject(): ?string
+    public function subject(): string
     {
         return $this->since ? 'depuis '.$this->since : 'toutes';
     }

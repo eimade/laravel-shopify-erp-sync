@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  qualite-et-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, zip, pdo_sqlite, bcmath
+          coverage: pcov
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Installation des dépendances
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Préparation de l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Lint (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Analyse statique (PHPStan niveau 6)
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Tests + couverture
+        run: php artisan test --coverage-text --coverage-clover=coverage.xml
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: qualite-et-tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build de l'image
+        run: docker build -t synchub-app .

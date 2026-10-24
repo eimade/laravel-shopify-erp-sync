@@ -1,0 +1,78 @@
+"Date et heure au format ISO 8601, ex. 2026-10-24T14:00:00+00:00."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTimeTz")
+
+"""
+API GraphQL interne (lecture seule) : catalogue unifié ERP (prix, stock) + PIM (fiche)
++ état de synchronisation Shopify, destiné aux fronts JS.
+"""
+type Query {
+  "Catalogue paginé, filtrable par texte (titre, handle ou SKU)."
+  products(search: String @scope(name: "search")): [Product!]!
+    @paginate(defaultCount: 20, maxCount: 100)
+    @orderBy(column: "title")
+
+  "Fiche produit par handle."
+  product(handle: String! @eq): Product @find
+
+  "Variante par SKU."
+  variant(sku: String! @eq): Variant @find
+
+  "Santé des connecteurs et indicateurs de synchronisation."
+  syncHealth: SyncHealth! @field(resolver: "App\\GraphQL\\Queries\\SyncHealthQuery")
+}
+
+# L'enum VariantSyncStatus (Pending, Synced, Unmapped, Conflict, Error) est générée depuis
+# l'enum PHP App\Domain\Enums\VariantSyncStatus (enregistrée dans AppServiceProvider).
+
+type Product {
+  id: ID!
+  handle: String!
+  title: String!
+  description: String
+  vendor: String
+  productType: String @rename(attribute: "product_type")
+  shopifyProductId: String @rename(attribute: "shopify_product_id")
+  variants: [Variant!]! @hasMany
+  "Prix minimum parmi les variantes."
+  priceFrom: Float! @method(name: "priceFrom")
+  "Stock vendable total (toutes variantes)."
+  totalAvailable: Int! @method(name: "totalAvailable")
+}
+
+type Variant {
+  id: ID!
+  sku: String!
+  title: String!
+  price: Float!
+  compareAtPrice: Float @rename(attribute: "compare_at_price")
+  "Quantité vendable = physique - réservé - stock de sécurité."
+  available: Int! @method(name: "availableQuantity")
+  stockLevels: [StockLevel!]! @hasMany(relation: "stockLevels")
+  shopifyVariantId: String @rename(attribute: "shopify_variant_id")
+  syncStatus: VariantSyncStatus! @rename(attribute: "sync_status")
+  lastSyncedAt: DateTime @rename(attribute: "last_synced_at")
+  product: Product! @belongsTo
+}
+
+type StockLevel {
+  location: String!
+  onHand: Int! @rename(attribute: "on_hand")
+  reserved: Int!
+  safetyStock: Int! @rename(attribute: "safety_stock")
+}
+
+type SyncHealth {
+  shopifyOk: Boolean!
+  shopifyDriver: String!
+  shopName: String
+  shopifyError: String
+  latencyMs: Int!
+  lastSuccessAt: String
+  runs24h: Int!
+  failed24h: Int!
+  deadLetters: Int!
+  successRate24h: Float!
+  openConflicts: Int!
+  unmappedVariants: Int!
+  lastWebhookAt: String
+}

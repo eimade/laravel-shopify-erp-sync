@@ -1,0 +1,17 @@
+sku;product_handle;product_title;variant_title;price;compare_at_price;location;on_hand;safety_stock
+ROBE-LIN-S;robe-lin-ete;Robe en lin été;S;79.90;99.90;entrepot-lyon;12;2
+ROBE-LIN-S;robe-lin-ete;Robe en lin été;S;79.90;99.90;boutique-paris;3;1
+ROBE-LIN-M;robe-lin-ete;Robe en lin été;M;79.90;99.90;entrepot-lyon;20;2
+ROBE-LIN-M;robe-lin-ete;Robe en lin été;M;79.90;99.90;boutique-paris;4;1
+ROBE-LIN-L;robe-lin-ete;Robe en lin été;L;79.90;99.90;entrepot-lyon;0;0
+CHEM-OXF-BL-M;chemise-oxford;Chemise Oxford;Bleu / M;59.00;;entrepot-lyon;35;5
+CHEM-OXF-BL-L;chemise-oxford;Chemise Oxford;Bleu / L;59.00;;entrepot-lyon;18;5
+CHEM-OXF-BC-M;chemise-oxford;Chemise Oxford;Blanc / M;59.00;;entrepot-lyon;9;5
+JEAN-DRT-30;jean-droit-brut;Jean droit brut;W30;89.00;;entrepot-lyon;14;2
+JEAN-DRT-32;jean-droit-brut;Jean droit brut;W32;89.00;;entrepot-lyon;22;2
+SERUM-VITC-30;serum-vitamine-c;Sérum vitamine C;30 ml;34.50;;entrepot-lyon;120;10
+SERUM-VITC-30;serum-vitamine-c;Sérum vitamine C;30 ml;34.50;;boutique-paris;15;3
+CREME-HYD-50;creme-hydratante;Crème hydratante karité;50 ml;24.90;29.90;entrepot-lyon;80;10
+HUILE-ARG-100;huile-argan-bio;Huile d'argan bio;100 ml;19.90;;entrepot-lyon;60;5
+PARF-ROSE-50;eau-de-parfum-rose;Eau de parfum Rose;50 ml;68.00;;entrepot-lyon;25;3
+FOUL-SOIE-01;foulard-soie;Foulard en soie imprimé;Unique;45.00;;boutique-paris;7;1

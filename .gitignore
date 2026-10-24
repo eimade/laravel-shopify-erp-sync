@@ -26,3 +26,4 @@ Thumbs.db
 /public/js/filament
 /public/css/filament
 /public/fonts/filament
+/storage/framework/phpstan

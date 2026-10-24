@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SyncHub — Catalogue unifié</title>
+    <title>Uimad Sync — Catalogue unifié</title>
     <link rel="stylesheet" href="{{ asset('css/catalogue.css') }}">
 </head>
 <body>
 <header>
-    <h1>SyncHub <small>catalogue unifié ERP + PIM + Shopify</small></h1>
+    <h1>Uimad Sync <small>catalogue unifié ERP + PIM + Shopify</small></h1>
     <nav><a href="/admin">Back-office Filament</a></nav>
 </header>
 

@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
-Artisan::command('synchub:pull-catalog', function (SyncDispatcher $dispatcher) {
+Artisan::command('uimadsync:pull-catalog', function (SyncDispatcher $dispatcher) {
     $run = $dispatcher->dispatch(new PullShopifyCatalog);
     $this->info("Lecture du catalogue Shopify mise en file (journal #{$run->id}, statut {$run->status->label()}).");
 })->purpose('Rapprocher le catalogue Shopify des SKU ERP (mapping + conflits)');
 
-Artisan::command('synchub:push-all', function (SyncDispatcher $dispatcher) {
+Artisan::command('uimadsync:push-all', function (SyncDispatcher $dispatcher) {
     $count = 0;
     Variant::query()->orderBy('id')->pluck('sku')->each(function (string $sku) use ($dispatcher, &$count) {
         $dispatcher->dispatch(new PushVariantToShopify($sku));
@@ -28,13 +28,13 @@ Artisan::command('synchub:push-all', function (SyncDispatcher $dispatcher) {
     $this->info("{$count} synchronisation(s) ERP → Shopify mises en file.");
 })->purpose('Pousser prix et stocks ERP de tous les SKU vers Shopify');
 
-Artisan::command('synchub:pull-orders {--since= : date ISO 8601 (défaut : 24 h)}', function (SyncDispatcher $dispatcher) {
+Artisan::command('uimadsync:pull-orders {--since= : date ISO 8601 (défaut : 24 h)}', function (SyncDispatcher $dispatcher) {
     $since = $this->option('since') ?: now()->subDay()->toIso8601String();
     $run = $dispatcher->dispatch(new PullShopifyOrders($since));
     $this->info("Rattrapage des commandes depuis {$since} mis en file (journal #{$run->id}).");
 })->purpose('Rattraper les commandes Shopify dont le webhook aurait été perdu');
 
-Artisan::command('synchub:import-csv {path}', function (CsvCatalogImporter $importer, SyncDispatcher $dispatcher) {
+Artisan::command('uimadsync:import-csv {path}', function (CsvCatalogImporter $importer, SyncDispatcher $dispatcher) {
     $report = $importer->import((string) $this->argument('path'));
     foreach ($report['changed_skus'] as $sku) {
         $dispatcher->dispatch(new PushVariantToShopify($sku));
@@ -51,7 +51,7 @@ Artisan::command('synchub:import-csv {path}', function (CsvCatalogImporter $impo
  * Démo hors-ligne : simule l'envoi d'un webhook signé par Shopify, traité par la vraie
  * pile HTTP (middleware HMAC, idempotence, mise en file).
  */
-Artisan::command('synchub:simulate-webhook {topic : orders/create ou products/update} {--sku=} {--qty=1} {--price=}', function (FakeShopifyClient $fake) {
+Artisan::command('uimadsync:simulate-webhook {topic : orders/create ou products/update} {--sku=} {--qty=1} {--price=}', function (FakeShopifyClient $fake) {
     $topic = (string) $this->argument('topic');
     $sku = (string) ($this->option('sku') ?: Variant::whereNotNull('shopify_variant_id')->value('sku'));
     $variant = Variant::with('product')->where('sku', $sku)->first();
@@ -76,7 +76,7 @@ Artisan::command('synchub:simulate-webhook {topic : orders/create ou products/up
         ];
     } elseif ($topic === 'products/update') {
         $price = (string) ($this->option('price') ?: number_format((float) $variant->price * 0.9, 2, '.', ''));
-        if (config('synchub.shopify.driver') === 'fake') {
+        if (config('uimadsync.shopify.driver') === 'fake') {
             $fake->setPriceBySku($sku, $price); // la boutique simulée reflète la modification
         }
         $payload = [
@@ -104,8 +104,8 @@ Artisan::command('synchub:simulate-webhook {topic : orders/create ou products/up
         'HTTP_ACCEPT' => 'application/json',
         'HTTP_X_SHOPIFY_TOPIC' => $topic,
         'HTTP_X_SHOPIFY_WEBHOOK_ID' => (string) Str::uuid(),
-        'HTTP_X_SHOPIFY_SHOP_DOMAIN' => config('synchub.shopify.shop_domain'),
-        'HTTP_X_SHOPIFY_HMAC_SHA256' => VerifyShopifyWebhook::sign($body, (string) config('synchub.shopify.webhook_secret')),
+        'HTTP_X_SHOPIFY_SHOP_DOMAIN' => config('uimadsync.shopify.shop_domain'),
+        'HTTP_X_SHOPIFY_HMAC_SHA256' => VerifyShopifyWebhook::sign($body, (string) config('uimadsync.shopify.webhook_secret')),
     ], content: $body);
 
     $response = app(HttpKernel::class)->handle($request);
@@ -114,11 +114,11 @@ Artisan::command('synchub:simulate-webhook {topic : orders/create ou products/up
     return $response->getStatusCode() < 300 ? 0 : 1;
 })->purpose('Simuler un webhook Shopify signé (démo hors-ligne)');
 
-Artisan::command('synchub:is-seeded', function () {
+Artisan::command('uimadsync:is-seeded', function () {
     $this->line(Variant::query()->exists() ? 'yes' : 'no');
 })->purpose('Indique si les données de démo sont présentes (utilisé par le conteneur Docker)');
 
 // Réconciliation périodique : filet de sécurité si un webhook ou un job a été perdu.
-Schedule::command('synchub:pull-orders')->hourly()->withoutOverlapping();
-Schedule::command('synchub:pull-catalog')->dailyAt('02:00')->withoutOverlapping();
-Schedule::command('synchub:push-all')->dailyAt('03:00')->withoutOverlapping();
+Schedule::command('uimadsync:pull-orders')->hourly()->withoutOverlapping();
+Schedule::command('uimadsync:pull-catalog')->dailyAt('02:00')->withoutOverlapping();
+Schedule::command('uimadsync:push-all')->dailyAt('03:00')->withoutOverlapping();

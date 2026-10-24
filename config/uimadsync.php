@@ -4,7 +4,7 @@ return [
     'shopify' => [
         // "fake" : boutique simulée (démo hors-ligne, tests) ; "graphql" : Admin API réelle.
         'driver' => env('SHOPIFY_DRIVER', 'fake'),
-        'shop_domain' => env('SHOPIFY_SHOP_DOMAIN', 'synchub-demo.myshopify.com'),
+        'shop_domain' => env('SHOPIFY_SHOP_DOMAIN', 'uimadsync-demo.myshopify.com'),
         'access_token' => env('SHOPIFY_ACCESS_TOKEN', ''),
         'api_version' => env('SHOPIFY_API_VERSION', '2025-07'),
         'location_id' => env('SHOPIFY_LOCATION_ID', ''),
@@ -20,5 +20,5 @@ return [
     ],
 
     // Destinataire des alertes de dead-letter.
-    'alert_email' => env('SYNCHUB_ALERT_EMAIL', 'ops@example.com'),
+    'alert_email' => env('UIMADSYNC_ALERT_EMAIL', 'ops@example.com'),
 ];

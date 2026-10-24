@@ -13,7 +13,7 @@ class VerifyErpToken
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $expected = (string) config('synchub.erp.api_token');
+        $expected = (string) config('uimadsync.erp.api_token');
         if ($expected === '') {
             return response()->json(['message' => 'API ERP non configurée (ERP_API_TOKEN).'], 503);
         }

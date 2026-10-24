@@ -46,4 +46,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build de l'image
-        run: docker build -t synchub-app .
+        run: docker build -t uimadsync-app .

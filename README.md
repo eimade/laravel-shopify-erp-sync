@@ -1,8 +1,8 @@
-# SyncHub — connecteur Laravel Shopify ↔ ERP/PIM
+# Uimad Sync — connecteur Laravel Shopify ↔ ERP/PIM
 
 [![CI](https://github.com/eimade/laravel-shopify-erp-sync/actions/workflows/ci.yml/badge.svg)](https://github.com/eimade/laravel-shopify-erp-sync/actions/workflows/ci.yml)
 
-SyncHub synchronise automatiquement **prix, stocks, fiches produits et commandes** entre l'ERP / le PIM
+Uimad Sync synchronise automatiquement **prix, stocks, fiches produits et commandes** entre l'ERP / le PIM
 d'un détaillant et sa boutique **Shopify**, trace chaque échange et alerte l'équipe en cas d'échec.
 
 > Démo 100 % hors-ligne : une boutique Shopify **simulée** (faux client respectant le même contrat que le
@@ -45,7 +45,7 @@ Besoins exprimés par l'équipe e-commerce et la comptabilité :
   **résolution des conflits** (garder l'ERP / accepter Shopify), édition prix/stocks ERP, import CSV, fiches PIM, commandes.
 - **API GraphQL interne (Lighthouse)** en lecture : catalogue unifié paginé, recherche, variante par SKU, santé des connecteurs.
 - **Front JavaScript** (vanilla, sans build) consommant l'API GraphQL : `http://localhost:18080/`.
-- **Mode démo hors-ligne** : `SHOPIFY_DRIVER=fake` (par défaut) ; commande `synchub:simulate-webhook` pour envoyer de vrais webhooks signés.
+- **Mode démo hors-ligne** : `SHOPIFY_DRIVER=fake` (par défaut) ; commande `uimadsync:simulate-webhook` pour envoyer de vrais webhooks signés.
 - **Réconciliation planifiée** (scheduler) : rattrapage horaire des commandes, relecture du catalogue et republication quotidiennes.
 
 ## 3. Schéma des flux
@@ -55,7 +55,7 @@ Besoins exprimés par l'équipe e-commerce et la comptabilité :
                     Import CSV  ─────────┐                   ┌──── édition prix/stock, rejouer, conflits
                                          ▼                   ▼
    ┌──────────────┐  prix/stock  ┌────────────────────────────────────┐
-   │ Mini-ERP     │◄────────────►│              SyncHub               │
+   │ Mini-ERP     │◄────────────►│            Uimad Sync              │
    │ (variants,   │  ventes      │                                    │
    │ stock_levels,│◄─────────────│  SyncDispatcher ─► sync_runs       │
    │ orders)      │              │        │ (journal)                 │
@@ -130,7 +130,7 @@ de démo et exécute un premier cycle de synchronisation.
 | URL | Contenu |
 |---|---|
 | http://localhost:18080/ | front JS du catalogue unifié (API GraphQL) |
-| http://localhost:18080/admin | back-office Filament — `admin@synchub.test` / `password` (compte de démo) |
+| http://localhost:18080/admin | back-office Filament — `admin@uimadsync.test` / `password` (compte de démo) |
 | http://localhost:18080/graphql | API GraphQL (POST) |
 | http://localhost:18080/api/erp/items | API REST ERP (en-tête `X-Erp-Token: demo-erp-token`) |
 
@@ -175,8 +175,8 @@ curl -s -X POST -H "X-Erp-Token: demo-erp-token" http://localhost:18080/api/erp/
 
 ```bash
 # Simulation intégrée (passe par la vraie pile HTTP : HMAC, idempotence, file)
-docker compose exec app php artisan synchub:simulate-webhook orders/create --sku=ROBE-LIN-M --qty=2
-docker compose exec app php artisan synchub:simulate-webhook products/update --sku=CHEM-OXF-BL-M --price=49.00
+docker compose exec app php artisan uimadsync:simulate-webhook orders/create --sku=ROBE-LIN-M --qty=2
+docker compose exec app php artisan uimadsync:simulate-webhook products/update --sku=CHEM-OXF-BL-M --price=49.00
 
 # Ou à la main avec curl
 BODY='{"id":1001,"name":"#1001","currency":"EUR","total_price":"79.90","line_items":[{"sku":"ROBE-LIN-S","title":"Robe","quantity":1,"price":"79.90"}]}'
@@ -196,10 +196,10 @@ curl -s http://localhost:18080/graphql -H "Content-Type: application/json" -d '{
 ### Commandes d'exploitation
 
 ```bash
-php artisan synchub:pull-catalog          # mapping SKU + détection des conflits
-php artisan synchub:push-all              # republication de tout l'ERP
-php artisan synchub:pull-orders --since=2026-10-01T00:00:00Z
-php artisan synchub:import-csv chemin/fichier.csv
+php artisan uimadsync:pull-catalog          # mapping SKU + détection des conflits
+php artisan uimadsync:push-all              # republication de tout l'ERP
+php artisan uimadsync:pull-orders --since=2026-10-01T00:00:00Z
+php artisan uimadsync:import-csv chemin/fichier.csv
 ```
 
 ## 8. Tests et qualité
@@ -244,7 +244,7 @@ La CI GitHub Actions exécute Pint, PHPStan, les tests avec couverture (pcov) pu
    - `Erreur GraphQL … THROTTLED` répétée → réduire la taille des pages ou espacer la planification ;
    - `… refusé par Shopify : …` (userErrors) → donnée invalide côté ERP (prix négatif, emplacement inconnu).
 4. Corriger la cause puis cliquer **Rejouer** (ou `POST /api/erp/sync-runs/{id}/replay`) : une nouvelle exécution liée à l'originale est créée.
-5. Commande manquante ? `php artisan synchub:pull-orders --since=…` (idempotent). Webhooks reçus : table `webhook_receipts`.
+5. Commande manquante ? `php artisan uimadsync:pull-orders --since=…` (idempotent). Webhooks reçus : table `webhook_receipts`.
 6. Logs : `docker compose logs -f worker app` (les dead-letters sont journalisés en `critical`).
 7. File bloquée : `docker compose exec app php artisan queue:failed` / `queue:retry all` ; vérifier `docker compose ps` (worker, redis).
 
@@ -256,8 +256,8 @@ et remplacé par une implémentation locale :
 | Système réel | Contrat | Implémentation de démo | Ce qui est simulé |
 |---|---|---|---|
 | Boutique Shopify (Admin API GraphQL) | `App\Integrations\Shopify\ShopifyClient` | `FakeShopifyClient` (`SHOPIFY_DRIVER=fake`, défaut) | produits, variantes, stocks et commandes conservés dans le cache (Redis en Docker, mémoire en test), pagination par curseur reproduite. Le client réel `GraphqlShopifyClient` existe et est testé contre des réponses `Http::fake` (pagination, `THROTTLED`, 401/5xx, `userErrors`) |
-| Webhooks envoyés par Shopify | middleware `VerifyShopifyWebhook` | commande `synchub:simulate-webhook` | génère un payload `orders/create` / `products/update`, le signe en HMAC avec le secret de démo et l'envoie à la vraie route HTTP |
-| ERP du détaillant | `App\Integrations\Erp\ErpClient` | `DatabaseErpClient` (« mini-ERP ») | tables `variants` / `stock_levels` / `orders` dans la base SyncHub, exposées par une API REST et un import CSV |
+| Webhooks envoyés par Shopify | middleware `VerifyShopifyWebhook` | commande `uimadsync:simulate-webhook` | génère un payload `orders/create` / `products/update`, le signe en HMAC avec le secret de démo et l'envoie à la vraie route HTTP |
+| ERP du détaillant | `App\Integrations\Erp\ErpClient` | `DatabaseErpClient` (« mini-ERP ») | tables `variants` / `stock_levels` / `orders` dans la base Uimad Sync, exposées par une API REST et un import CSV |
 | PIM | table `products` | fiches éditables dans Filament | titres, descriptions, marques |
 | Alerte e-mail de l'équipe | notification `SyncJobDeadLettered` | `MAIL_MAILER=log` | l'e-mail est écrit dans les logs (`docker compose logs app worker`) |
 
@@ -270,7 +270,7 @@ Pour passer sur une vraie boutique, il suffit de changer `SHOPIFY_DRIVER=graphql
 2. Variables (dans un `.env` non versionné ou l'environnement) : `SHOPIFY_DRIVER=graphql`, `SHOPIFY_SHOP_DOMAIN`, `SHOPIFY_ACCESS_TOKEN`,
    `SHOPIFY_LOCATION_ID` (GID de l'entrepôt Shopify), `SHOPIFY_WEBHOOK_SECRET`.
 3. Déclarer les webhooks `orders/create` et `products/update` vers `https://<domaine>/api/webhooks/shopify`.
-4. `php artisan synchub:pull-catalog` puis `php artisan synchub:push-all`.
+4. `php artisan uimadsync:pull-catalog` puis `php artisan uimadsync:push-all`.
 
 ## 13. Limites connues
 

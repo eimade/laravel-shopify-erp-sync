@@ -15,16 +15,16 @@ class VerifyShopifyWebhook
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $secret = (string) config('synchub.shopify.webhook_secret');
+        $secret = (string) config('uimadsync.shopify.webhook_secret');
         if ($secret === '') {
-            Log::error('SyncHub : SHOPIFY_WEBHOOK_SECRET non configuré, webhook refusé.');
+            Log::error('Uimad Sync : SHOPIFY_WEBHOOK_SECRET non configuré, webhook refusé.');
 
             return response()->json(['message' => 'Webhooks non configurés.'], 503);
         }
 
         $signature = (string) $request->header('X-Shopify-Hmac-Sha256', '');
         if (! self::isValid($request->getContent(), $signature, $secret)) {
-            Log::warning('SyncHub : signature de webhook invalide', ['topic' => $request->header('X-Shopify-Topic'), 'ip' => $request->ip()]);
+            Log::warning('Uimad Sync : signature de webhook invalide', ['topic' => $request->header('X-Shopify-Topic'), 'ip' => $request->ip()]);
 
             return response()->json(['message' => 'Signature HMAC invalide.'], 401);
         }

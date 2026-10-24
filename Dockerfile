@@ -7,7 +7,7 @@ RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev bash mariadb-client \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql intl zip bcmath pcntl opcache
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-COPY docker/php.ini /usr/local/etc/php/conf.d/zz-synchub.ini
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-uimadsync.ini
 
 WORKDIR /var/www/html
 
@@ -21,8 +21,8 @@ RUN composer dump-autoload --optimize --no-dev \
     && php artisan filament:assets \
     && chown -R www-data:www-data storage bootstrap/cache
 
-COPY docker/entrypoint.sh /usr/local/bin/synchub-entrypoint
-RUN chmod +x /usr/local/bin/synchub-entrypoint
+COPY docker/entrypoint.sh /usr/local/bin/uimadsync-entrypoint
+RUN chmod +x /usr/local/bin/uimadsync-entrypoint
 
-ENTRYPOINT ["synchub-entrypoint"]
+ENTRYPOINT ["uimadsync-entrypoint"]
 CMD ["php-fpm"]

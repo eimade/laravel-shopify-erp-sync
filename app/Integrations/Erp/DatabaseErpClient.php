@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
- * Mini-ERP simulé : les tables variants / stock_levels / orders de SyncHub.
+ * Mini-ERP simulé : les tables variants / stock_levels / orders de Uimad Sync.
  */
 class DatabaseErpClient implements ErpClient
 {

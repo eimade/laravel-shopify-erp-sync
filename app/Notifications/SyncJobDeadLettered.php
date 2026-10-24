@@ -23,7 +23,7 @@ class SyncJobDeadLettered extends Notification
     {
         return (new MailMessage)
             ->error()
-            ->subject("[SyncHub] Échec de synchronisation : {$this->run->type->label()}")
+            ->subject("[Uimad Sync] Échec de synchronisation : {$this->run->type->label()}")
             ->line("Le job #{$this->run->id} ({$this->run->subject}) a échoué après {$this->run->attempts} tentative(s).")
             ->line('Erreur : '.($this->run->error ?? 'inconnue'))
             ->action('Ouvrir le journal', url("/admin/sync-runs/{$this->run->id}"))

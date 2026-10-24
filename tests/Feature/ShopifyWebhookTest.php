@@ -36,7 +36,7 @@ class ShopifyWebhookTest extends TestCase
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_X_SHOPIFY_TOPIC' => $topic,
             'HTTP_X_SHOPIFY_WEBHOOK_ID' => $webhookId,
-            'HTTP_X_SHOPIFY_SHOP_DOMAIN' => 'synchub-demo.myshopify.com',
+            'HTTP_X_SHOPIFY_SHOP_DOMAIN' => 'uimadsync-demo.myshopify.com',
             'HTTP_X_SHOPIFY_HMAC_SHA256' => $signature,
         ], $body);
     }
@@ -95,7 +95,7 @@ class ShopifyWebhookTest extends TestCase
 
     public function test_webhooks_are_refused_when_secret_is_not_configured(): void
     {
-        config(['synchub.shopify.webhook_secret' => '']);
+        config(['uimadsync.shopify.webhook_secret' => '']);
 
         $this->sendWebhook('orders/create', $this->orderPayload(), signature: 'x')->assertStatus(503);
     }

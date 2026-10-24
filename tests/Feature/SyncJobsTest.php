@@ -169,11 +169,11 @@ class SyncJobsTest extends TestCase
         $variant = $this->createSku('B-1', '20.00', shopifyPrice: '18.00');
         $this->dispatcher()->dispatch(new PullShopifyCatalog);
 
-        $this->app->make(ConflictResolver::class)->resolve(Conflict::sole(), ConflictResolution::KeepErp, 'admin@synchub.test');
+        $this->app->make(ConflictResolver::class)->resolve(Conflict::sole(), ConflictResolution::KeepErp, 'admin@uimadsync.test');
 
         $this->assertSame('20.00', $this->fakeShopify()->findVariantBySku('B-1')->price);
         $this->assertSame(VariantSyncStatus::Synced, $variant->fresh()->sync_status);
-        $this->assertSame('admin@synchub.test', Conflict::sole()->resolved_by);
+        $this->assertSame('admin@uimadsync.test', Conflict::sole()->resolved_by);
     }
 
     public function test_resolving_conflict_by_accepting_shopify_updates_erp(): void

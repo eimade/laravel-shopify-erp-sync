@@ -17,7 +17,7 @@ fi
 
 if [ "$ROLE" = "app" ]; then
   php artisan migrate --force
-  if [ "${SEED_DEMO:-true}" = "true" ] && [ "$(php artisan synchub:is-seeded)" = "no" ]; then
+  if [ "${SEED_DEMO:-true}" = "true" ] && [ "$(php artisan uimadsync:is-seeded)" = "no" ]; then
     php artisan db:seed --force
   fi
   # Fichiers statiques servis par nginx (volume partagé).

@@ -1,4 +1,4 @@
-// Front JS minimal consommant l'API GraphQL interne (Lighthouse) de SyncHub.
+// Front JS minimal consommant l'API GraphQL interne (Lighthouse) de Uimad Sync.
 (() => {
     'use strict';
 

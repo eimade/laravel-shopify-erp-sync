@@ -21,7 +21,7 @@ use Illuminate\Contracts\Cache\Repository as Cache;
  */
 class FakeShopifyClient implements ShopifyClient
 {
-    public const CACHE_KEY = 'synchub:fake-shopify:state';
+    public const CACHE_KEY = 'uimadsync:fake-shopify:state';
 
     public function __construct(private readonly Cache $cache) {}
 
@@ -164,7 +164,7 @@ class FakeShopifyClient implements ShopifyClient
         return $this->mutate(fn (array $s) => $s);
     }
 
-    public function reset(string $shopName = 'Boutique démo SyncHub'): void
+    public function reset(string $shopName = 'Boutique démo Uimad Sync'): void
     {
         $this->cache->forever(self::CACHE_KEY, $this->emptyState($shopName));
     }
@@ -187,7 +187,7 @@ class FakeShopifyClient implements ShopifyClient
     }
 
     /** @return FakeState */
-    private function emptyState(string $shopName = 'Boutique démo SyncHub'): array
+    private function emptyState(string $shopName = 'Boutique démo Uimad Sync'): array
     {
         return ['shop' => $shopName, 'nextId' => 1000, 'products' => [], 'orders' => [], 'calls' => 0];
     }

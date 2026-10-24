@@ -25,14 +25,14 @@ class DatabaseSeeder extends Seeder
     public function run(CsvCatalogImporter $importer, SyncDispatcher $dispatcher): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@synchub.test'],
-            ['name' => 'Admin SyncHub', 'password' => 'password'],
+            ['email' => 'admin@uimadsync.test'],
+            ['name' => 'Admin Uimad Sync', 'password' => 'password'],
         );
 
         $importer->import(database_path('seeders/data/erp-catalogue.csv'));
         $this->enrichFromPim();
 
-        if (config('synchub.shopify.driver') !== 'fake') {
+        if (config('uimadsync.shopify.driver') !== 'fake') {
             return; // Avec une vraie boutique, on se contente de l'ERP.
         }
 

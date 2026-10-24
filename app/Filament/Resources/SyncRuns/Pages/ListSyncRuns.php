@@ -31,7 +31,7 @@ class ListSyncRuns extends ListRecords
                 ->icon(Heroicon::OutlinedArrowUpTray)
                 ->requiresConfirmation()
                 ->action(function () {
-                    Artisan::call('synchub:push-all');
+                    Artisan::call('uimadsync:push-all');
                     Notification::make()->title(trim(Artisan::output()))->success()->send();
                 }),
             Action::make('pullOrders')

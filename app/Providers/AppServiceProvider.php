@@ -25,10 +25,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(FakeShopifyClient::class, fn ($app) => new FakeShopifyClient($app->make(Cache::class)));
 
         // Le throttle est partagé par toutes les requêtes d'un même processus (worker).
-        $this->app->singleton(CostThrottle::class, fn () => new CostThrottle((int) config('synchub.shopify.throttle_buffer')));
+        $this->app->singleton(CostThrottle::class, fn () => new CostThrottle((int) config('uimadsync.shopify.throttle_buffer')));
 
         $this->app->singleton(ShopifyClient::class, function ($app) {
-            $config = config('synchub.shopify');
+            $config = config('uimadsync.shopify');
 
             return match ($config['driver']) {
                 'fake' => $app->make(FakeShopifyClient::class),

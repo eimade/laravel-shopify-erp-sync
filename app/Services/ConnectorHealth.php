@@ -44,7 +44,7 @@ class ConnectorHealth
 
         return [
             'shopify_ok' => $error === null,
-            'shopify_driver' => (string) config('synchub.shopify.driver'),
+            'shopify_driver' => (string) config('uimadsync.shopify.driver'),
             'shop_name' => $shopName,
             'shopify_error' => $error,
             'latency_ms' => $latency,

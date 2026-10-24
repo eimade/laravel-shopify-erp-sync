@@ -35,6 +35,6 @@
         <env name="SHOPIFY_DRIVER" value="fake"/>
         <env name="SHOPIFY_WEBHOOK_SECRET" value="test-webhook-secret"/>
         <env name="ERP_API_TOKEN" value="test-erp-token"/>
-        <env name="SYNCHUB_ALERT_EMAIL" value="ops@example.com"/>
+        <env name="UIMADSYNC_ALERT_EMAIL" value="ops@example.com"/>
     </php>
 </phpunit>

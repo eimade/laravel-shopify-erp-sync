@@ -110,9 +110,9 @@ abstract class TrackedSyncJob implements ShouldQueue
             'finished_at' => now(),
         ]);
 
-        Log::critical('SyncHub : job en dead-letter', ['sync_run_id' => $run->id, 'type' => $run->type->value, 'subject' => $run->subject]);
+        Log::critical('Uimad Sync : job en dead-letter', ['sync_run_id' => $run->id, 'type' => $run->type->value, 'subject' => $run->subject]);
 
-        $to = config('synchub.alert_email');
+        $to = config('uimadsync.alert_email');
         if (is_string($to) && $to !== '') {
             Notification::route('mail', $to)->notify(new SyncJobDeadLettered($run));
         }
